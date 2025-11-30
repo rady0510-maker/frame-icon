@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>フレームアイコンメーカー</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "YuGothic", sans-serif;
+      text-align: center;
+      padding: 16px;
+      background: #f8f8f8;
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    #canvas {
+      width: 300px;
+      height: 300px;
+      margin: 16px auto;
+      display: block;
+      border-radius: 50%;
+      background: #ddd;
+    }
+    input {
+      margin: 12px 0;
+    }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #ff4b9b;
+      color: white;
+      border: none;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>フレームアイコンメーカー</h1>
+  <p>写真をアップすると枠付きアイコンが作れるよ✨</p>
+
+  <input id="file-input" type="file" accept="image/*">
+  <canvas id="canvas" width="1000" height="1000"></canvas>
+
+  <button class="btn" id="download-btn">画像を保存する</button>
+
+  <p style="font-size:12px;color:#666;margin-top:10px;">
+    ※写真はサーバーに保存されません
+  </p>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const fileInput = document.getElementById("file-input");
+  const downloadBtn = document.getElementById("download-btn");
+
+  const frameImg = new Image();
+  frameImg.src = "frame.png"; // あとでアップする枠画像
+
+  frameImg.onload = () => {
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  };
+
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const scale = Math.max(
+          canvas.width / img.width,
+          canvas.height / img.height
+        );
+        const sw = img.width * scale;
+        const sh = img.height * scale;
+        const dx = (canvas.width - sw) / 2;
+        const dy = (canvas.height - sh) / 2;
+
+        ctx.drawImage(img, dx, dy, sw, sh);
+        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "icon.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+</script>
+
+</body>
+</html>
